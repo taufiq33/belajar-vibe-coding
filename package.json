@@ -12,8 +12,10 @@
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
-    "elysia": "^1.2.14",
+    "@types/bcrypt": "^6.0.0",
+    "bcrypt": "^6.0.0",
     "drizzle-orm": "^0.39.1",
+    "elysia": "^1.2.14",
     "mysql2": "^3.12.0"
   },
   "devDependencies": {
