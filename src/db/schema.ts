@@ -1,4 +1,4 @@
-import { mysqlTable, int, varchar, timestamp } from 'drizzle-orm/mysql-core';
+import { mysqlTable, int, varchar, text, timestamp } from 'drizzle-orm/mysql-core';
 
 export const users = mysqlTable('users', {
   id: int('id').primaryKey().autoincrement(),
@@ -17,7 +17,19 @@ export const sessions = mysqlTable('sessions', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
+export const posts = mysqlTable('posts', {
+  id: int('id').primaryKey().autoincrement(),
+  title: varchar('title', { length: 255 }).notNull(),
+  content: text('content').notNull(),
+  userId: int('user_id')
+    .notNull()
+    .references(() => users.id),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 export type Session = typeof sessions.$inferSelect;
 export type NewSession = typeof sessions.$inferInsert;
+export type Post = typeof posts.$inferSelect;
+export type NewPost = typeof posts.$inferInsert;
