@@ -15,6 +15,10 @@ export interface LoginUserPayload {
   password: string;
 }
 
+export interface LogoutUserPayload {
+  token: string;
+}
+
 export async function registerUserService(payload: RegisterUserPayload) {
   const { name, email, password } = payload;
 
@@ -70,4 +74,22 @@ export async function loginUserService(payload: LoginUserPayload) {
   });
 
   return { data: 'OK', token };
+}
+
+export async function logoutUserService(payload: LogoutUserPayload) {
+  const { token } = payload;
+
+  const foundSessions = await db
+    .select()
+    .from(sessions)
+    .where(eq(sessions.token, token))
+    .limit(1);
+
+  if (foundSessions.length === 0) {
+    throw new Error('Token tidak valid');
+  }
+
+  await db.delete(sessions).where(eq(sessions.id, foundSessions[0].id));
+
+  return { data: 'OK' };
 }

@@ -1,5 +1,5 @@
 import { Elysia, t } from 'elysia';
-import { registerUserService, loginUserService } from '../services/users_service';
+import { registerUserService, loginUserService, logoutUserService } from '../services/users_service';
 
 export const usersRoute = new Elysia({ prefix: '/api/users' })
   .post(
@@ -44,6 +44,27 @@ export const usersRoute = new Elysia({ prefix: '/api/users' })
       body: t.Object({
         email: t.String({ format: 'email', maxLength: 255 }),
         password: t.String({ minLength: 1 }),
+      }),
+    }
+  )
+  .post(
+    '/logout',
+    async ({ body, set }) => {
+      try {
+        const result = await logoutUserService(body);
+        return result;
+      } catch (error: any) {
+        if (error?.message === 'Token tidak valid') {
+          set.status = 400;
+          return { error: 'Token tidak valid' };
+        }
+        set.status = 500;
+        return { error: error?.message || 'Terjadi kesalahan pada server' };
+      }
+    },
+    {
+      body: t.Object({
+        token: t.String({ minLength: 1 }),
       }),
     }
   );
