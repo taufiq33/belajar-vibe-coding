@@ -1,16 +1,16 @@
 import { db } from '../db';
-import { comments, posts, users } from '../db/schema';
+import { comments, posts } from '../db/schema';
 import { eq } from 'drizzle-orm';
 
 /**
  * Payload untuk membuat komentar.
  *
- * @field userId - ID user yang mengomentari (opsional, guest jika tidak dikirim)
+ * @field userId - ID user yang mengomentari (opsional, guest jika undefined/null)
  * @field postId - ID postingan yang dikomentari (wajib, harus ada di tabel posts)
  * @field content - Isi komentar (minimal 1 karakter)
  */
 export interface CreateCommentPayload {
-  userId?: number;
+  userId?: number | null;
   postId: number;
   content: string;
 }
@@ -20,17 +20,15 @@ export interface CreateCommentPayload {
  *
  * Alur:
  * 1. Validasi postId ada di tabel posts → jika tidak ada, lempar error "Postingan tidak ditemukan"
- * 2. JIKA userId dikirim: validasi user ada di tabel users → jika tidak ada, lempar error "User tidak ditemukan"
- * 3. Insert komentar ke tabel comments (user_id bisa null untuk guest comment)
- * 4. Return { data: 'OK' }
+ * 2. Insert komentar ke tabel comments (user_id bisa null untuk guest comment)
+ * 3. Return { data: 'OK' }
  *
- * Catatan: Pengecekan postingan wajib selalu dilakukan. Pengecekan user hanya
- * dilakukan jika userId dikirim (guest comment tanpa userId = user_id null di DB).
+ * Catatan: userId sudah ditentukan di layer route (dari token Authorization).
+ * Jika undefined/null → user_id = NULL di DB (guest comment).
  *
  * @param payload - Data komentar baru (postId, content, userId opsional)
  * @returns Promise<{ data: string }>
  * @throws Error('Postingan tidak ditemukan') jika postId tidak ada di database
- * @throws Error('User tidak ditemukan') jika userId dikirim tapi tidak ada di database
  */
 export async function createCommentService(payload: CreateCommentPayload) {
   const { userId, postId, content } = payload;
@@ -45,20 +43,8 @@ export async function createCommentService(payload: CreateCommentPayload) {
     throw new Error('Postingan tidak ditemukan');
   }
 
-  if (userId !== undefined) {
-    const foundUsers = await db
-      .select()
-      .from(users)
-      .where(eq(users.id, userId))
-      .limit(1);
-
-    if (foundUsers.length === 0) {
-      throw new Error('User tidak ditemukan');
-    }
-  }
-
   await db.insert(comments).values({
-    userId,
+    userId: userId ?? null,
     postId,
     content,
   });
