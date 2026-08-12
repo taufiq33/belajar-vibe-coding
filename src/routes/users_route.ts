@@ -15,35 +15,11 @@ export const usersRoute = new Elysia({ prefix: '/api/users' })
    * POST /api/users
    * Registrasi user baru.
    *
-   * @tag Users
-   * @summary Registrasi user baru
-   *
-   * @description
    * Membuat akun user baru dengan nama, email, dan password.
    * Email harus unik. Password akan di-hash sebelum disimpan ke database.
    *
-   * @requestBody
-   * ```json
-   * {
-   *   "name": "Budi",
-   *   "email": "budi@example.com",
-   *   "password": "rahasia123"
-   * }
-   * ```
-   *
-   * @response 200 - Berhasil registrasi
-   * ```json
-   * { "data": "OK" }
-   * ```
-   *
-   * @response 400 - Email sudah terdaftar
-   * ```json
-   * { "error": "Email sudah terdaftar" }
-   * ```
-   *
-   * @response 422 - Validasi gagal (field kosong / format email salah)
-   *
-   * @response 500 - Kesalahan server
+   * @summary Registrasi user baru
+   * @tags Users
    */
   .post(
     '/',
@@ -62,45 +38,36 @@ export const usersRoute = new Elysia({ prefix: '/api/users' })
     },
     {
       body: t.Object({
-        name: t.String({ minLength: 1, maxLength: 255 }),
-        email: t.String({ format: 'email', maxLength: 255 }),
-        password: t.String({ minLength: 1 }),
+        name: t.String({ minLength: 1, maxLength: 255, default: 'Budi' }),
+        email: t.String({ format: 'email', maxLength: 255, default: 'budi@example.com' }),
+        password: t.String({ minLength: 1, default: 'rahasia123' }),
       }),
+      response: {
+        200: t.Object({
+          data: t.String({ default: 'OK' }),
+        }, { description: 'Registrasi berhasil' }),
+        400: t.Object({
+          error: t.String({ default: 'Email sudah terdaftar' }),
+        }, { description: 'Email sudah terdaftar' }),
+        422: t.Object({
+          summary: t.String({ default: 'Expected property name/email/password' }),
+        }, { description: 'Validasi gagal — field kosong atau format salah' }),
+        500: t.Object({
+          error: t.String({ default: 'Terjadi kesalahan pada server' }),
+        }, { description: 'Kesalahan internal server' }),
+      },
     }
   )
   /**
    * POST /api/users/login
    * Login user dan mendapatkan token sesi.
    *
-   * @tag Users
-   * @summary Login user
-   *
-   * @description
    * Verifikasi email dan password user. Jika valid, akan dibuat token UUID baru
    * dan disimpan ke tabel sessions. Token ini digunakan untuk autentikasi
    * pada request selanjutnya.
    *
-   * @requestBody
-   * ```json
-   * {
-   *   "email": "budi@example.com",
-   *   "password": "rahasia123"
-   * }
-   * ```
-   *
-   * @response 200 - Login berhasil
-   * ```json
-   * { "data": "OK", "token": "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d" }
-   * ```
-   *
-   * @response 400 - Email atau password salah
-   * ```json
-   * { "error": "Email/password salah" }
-   * ```
-   *
-   * @response 422 - Validasi gagal
-   *
-   * @response 500 - Kesalahan server
+   * @summary Login user
+   * @tags Users
    */
   .post(
     '/login',
@@ -119,42 +86,35 @@ export const usersRoute = new Elysia({ prefix: '/api/users' })
     },
     {
       body: t.Object({
-        email: t.String({ format: 'email', maxLength: 255 }),
-        password: t.String({ minLength: 1 }),
+        email: t.String({ format: 'email', maxLength: 255, default: 'budi@example.com' }),
+        password: t.String({ minLength: 1, default: 'rahasia123' }),
       }),
+      response: {
+        200: t.Object({
+          data: t.String({ default: 'OK' }),
+          token: t.String({ default: '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d' }),
+        }, { description: 'Login berhasil — mengembalikan token UUID' }),
+        400: t.Object({
+          error: t.String({ default: 'Email/password salah' }),
+        }, { description: 'Email atau password salah' }),
+        422: t.Object({
+          summary: t.String({ default: 'Expected property email/password' }),
+        }, { description: 'Validasi gagal — format email salah atau field kosong' }),
+        500: t.Object({
+          error: t.String({ default: 'Terjadi kesalahan pada server' }),
+        }, { description: 'Kesalahan internal server' }),
+      },
     }
   )
   /**
    * POST /api/users/logout
    * Logout user dengan menghapus token dari tabel sessions.
    *
-   * @tag Users
-   * @summary Logout user
-   *
-   * @description
    * Menghapus session/token dari database berdasarkan token yang dikirim.
    * Setelah logout, token tidak bisa digunakan lagi.
    *
-   * @requestBody
-   * ```json
-   * {
-   *   "token": "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d"
-   * }
-   * ```
-   *
-   * @response 200 - Logout berhasil
-   * ```json
-   * { "data": "OK" }
-   * ```
-   *
-   * @response 400 - Token tidak valid atau tidak ditemukan
-   * ```json
-   * { "error": "Token tidak valid" }
-   * ```
-   *
-   * @response 422 - Validasi gagal (token kosong)
-   *
-   * @response 500 - Kesalahan server
+   * @summary Logout user
+   * @tags Users
    */
   .post(
     '/logout',
@@ -173,7 +133,21 @@ export const usersRoute = new Elysia({ prefix: '/api/users' })
     },
     {
       body: t.Object({
-        token: t.String({ minLength: 1 }),
+        token: t.String({ minLength: 1, default: '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d' }),
       }),
+      response: {
+        200: t.Object({
+          data: t.String({ default: 'OK' }),
+        }, { description: 'Logout berhasil — token dihapus dari database' }),
+        400: t.Object({
+          error: t.String({ default: 'Token tidak valid' }),
+        }, { description: 'Token tidak ditemukan atau sudah tidak berlaku' }),
+        422: t.Object({
+          summary: t.String({ default: 'Expected property token' }),
+        }, { description: 'Validasi gagal — token kosong' }),
+        500: t.Object({
+          error: t.String({ default: 'Terjadi kesalahan pada server' }),
+        }, { description: 'Kesalahan internal server' }),
+      },
     }
   );

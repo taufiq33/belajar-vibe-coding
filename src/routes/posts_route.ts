@@ -21,27 +21,9 @@ export const postsRoute = new Elysia({ prefix: '/api/posts' })
    * User harus terdaftar di database (user_id valid).
    * Postingan akan disimpan ke tabel posts dengan created_at otomatis.
    *
-   * @requestBody
-   * ```json
-   * {
-   *   "userId": 1,
-   *   "title": "Judul Postingan",
-   *   "content": "Isi konten postingan saya di sini"
-   * }
-   * ```
-   *
    * @response 200 - Berhasil membuat postingan
-   * ```json
-   * { "data": "OK" }
-   * ```
-   *
    * @response 400 - User tidak ditemukan
-   * ```json
-   * { "error": "User tidak ditemukan" }
-   * ```
-   *
    * @response 422 - Validasi gagal (userId bukan number, title/content kosong)
-   *
    * @response 500 - Kesalahan server
    */
   .post(
@@ -65,5 +47,22 @@ export const postsRoute = new Elysia({ prefix: '/api/posts' })
         title: t.String({ minLength: 1, maxLength: 255 }),
         content: t.String({ minLength: 1 }),
       }),
+      detail: {
+        requestBody: {
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  userId: { type: 'number', example: 1 },
+                  title: { type: 'string', example: 'Halo Dunia' },
+                  content: { type: 'string', example: 'Ini adalah postingan pertama saya di platform ini.' },
+                },
+                required: ['userId', 'title', 'content'],
+              },
+            },
+          },
+        },
+      },
     }
   );
