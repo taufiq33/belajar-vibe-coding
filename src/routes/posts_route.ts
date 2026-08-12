@@ -13,18 +13,12 @@ export const postsRoute = new Elysia({ prefix: '/api/posts' })
    * POST /api/posts
    * Membuat postingan baru.
    *
-   * @tag Posts
-   * @summary Buat postingan baru
-   *
-   * @description
    * Membuat postingan baru dengan title dan content.
    * User harus terdaftar di database (user_id valid).
    * Postingan akan disimpan ke tabel posts dengan created_at otomatis.
    *
-   * @response 200 - Berhasil membuat postingan
-   * @response 400 - User tidak ditemukan
-   * @response 422 - Validasi gagal (userId bukan number, title/content kosong)
-   * @response 500 - Kesalahan server
+   * @summary Buat postingan baru
+   * @tags Posts
    */
   .post(
     '/',
@@ -43,26 +37,23 @@ export const postsRoute = new Elysia({ prefix: '/api/posts' })
     },
     {
       body: t.Object({
-        userId: t.Number(),
-        title: t.String({ minLength: 1, maxLength: 255 }),
-        content: t.String({ minLength: 1 }),
+        userId: t.Number({ default: 1 }),
+        title: t.String({ minLength: 1, maxLength: 255, default: 'Halo Dunia' }),
+        content: t.String({ minLength: 1, default: 'Ini adalah postingan pertama saya di platform ini.' }),
       }),
-      detail: {
-        requestBody: {
-          content: {
-            'application/json': {
-              schema: {
-                type: 'object',
-                properties: {
-                  userId: { type: 'number', example: 1 },
-                  title: { type: 'string', example: 'Halo Dunia' },
-                  content: { type: 'string', example: 'Ini adalah postingan pertama saya di platform ini.' },
-                },
-                required: ['userId', 'title', 'content'],
-              },
-            },
-          },
-        },
+      response: {
+        200: t.Object({
+          data: t.String({ default: 'OK' }),
+        }, { description: 'Postingan berhasil dibuat' }),
+        400: t.Object({
+          error: t.String({ default: 'User tidak ditemukan' }),
+        }, { description: 'User ID tidak ditemukan di database' }),
+        422: t.Object({
+          summary: t.String({ default: 'Expected property userId/title/content' }),
+        }, { description: 'Validasi gagal — userId bukan number, atau title/content kosong' }),
+        500: t.Object({
+          error: t.String({ default: 'Terjadi kesalahan pada server' }),
+        }, { description: 'Kesalahan internal server' }),
       },
     }
   );
