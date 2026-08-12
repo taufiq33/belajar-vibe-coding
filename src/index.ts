@@ -14,10 +14,23 @@ const app = new Elysia()
         version: '1.0.0',
         description: 'Backend API built with ElysiaJS + Drizzle ORM + MariaDB',
       },
+      servers: [
+        { url: 'http://localhost:3000', description: 'Local development server' },
+      ],
+      components: {
+        securitySchemes: {
+          BearerAuth: {
+            type: 'http',
+            scheme: 'bearer',
+            bearerFormat: 'UUID',
+            description: 'Masukkan token UUID dari endpoint login',
+          },
+        },
+      },
       tags: [
         { name: 'Users', description: 'Registrasi, login, dan logout user' },
-        { name: 'Posts', description: 'Manajemen postingan' },
-        { name: 'Comments', description: 'Komentar pada postingan' },
+        { name: 'Posts', description: 'Buat, lihat, dan baca detail postingan' },
+        { name: 'Comments', description: 'Buat dan lihat komentar pada postingan' },
       ],
     },
   }))

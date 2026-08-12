@@ -68,6 +68,9 @@ export const postsRoute = new Elysia({ prefix: '/api/posts' })
           error: t.String({ default: 'Terjadi kesalahan pada server' }),
         }, { description: 'Kesalahan internal server' }),
       },
+      detail: {
+        security: [{ BearerAuth: [] }],
+      },
     }
   )
   /**
